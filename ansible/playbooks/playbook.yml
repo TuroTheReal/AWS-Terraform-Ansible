@@ -1,0 +1,15 @@
+- name: Server configuration
+  hosts: vps
+  become: yes
+
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:
+
+    - name: Curl
+      command: apt install curl
+      state: present
+
+    - name: Docker
+      command: sudo apt install docker
+      state: present
