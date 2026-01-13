@@ -1,0 +1,28 @@
+---
+# Variables WordPress
+wordpress_db_name: wordpress
+wordpress_db_user: wpuser
+wordpress_db_password: "wp_secret_123"
+wordpress_db_host: mariadb:3306
+
+wp_admin_user: artberna
+wp_admin_password: "admin_secret_789"
+wp_admin_email: "arthurbernard.dev@gmail.com"
+wp_site_title: "Le beau site"
+wp_site_url: "http://{{ domain_name }}"
+
+wp_container_name: wordpress
+# MySQL
+mysql_root_password: "root_secret_456"
+
+# PHPMyAdmin
+pma_host: mariadb
+pma_port: 3306
+
+# Ports exposition
+wordpress_port: 8080
+phpmyadmin_port: 8081
+
+# Divers
+wordpress_directory: /opt/wordpress
+domain_name: artberna

@@ -1,0 +1,53 @@
+---
+- name: WordPress x Mariadb deployment
+  hosts: vps
+  become: yes
+
+  tasks:
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: "{{ wordpress_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Template a file
+      ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ wordpress_directory }}/docker-compose.yml"
+        mode: '0644'
+
+    - name: Create and start services
+      community.docker.docker_compose_v2:
+        project_src: "{{ wordpress_directory }}"
+        state: present
+      register: output
+
+    - name: Pause play until a URL is reachable from this host
+      ansible.builtin.uri:
+        url: "http://localhost:{{ wordpress_port }}"
+        status_code: [200, 302]
+        method: GET
+      register: _result
+      until: _result.status in [200, 302]
+      retries: 30
+      delay: 5
+
+    - name: Run a simple command
+      community.docker.docker_compose_v2_exec:
+        service: "{{ wp_container_name }}"
+        command: /bin/bash "wp core install \
+          --url=http://{{ domain_name }} \
+          --title={{ wp_site_title }} \
+          --admin_user={{ wp_admin_user }} \
+          --admin_password={{ wp_admin_password }} \
+          --admin_email={{ wp_admin_email }} \
+          --allow-root"
+        chdir: /root
+      register: result
+
+    - name: Show result
+      ansible.builtin.debug:
+        msg:
+          - "✅ WordPress déployé !"
+          - "URL: http://localhost:{{ wordpress_port }}"
+          - "PHPMyAdmin: http://localhost:{{ phpmyadmin_port }}"
