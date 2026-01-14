@@ -32,18 +32,44 @@
       retries: 30
       delay: 5
 
-    - name: Run a simple command
+    - name: Check if WP-CLI exists
+      community.docker.docker_container_exec:
+        container: "{{ wp_container_name }}"
+        command: wp --info --allow-root
+      register: wpcli_check
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Install WP-CLI in WordPress container
+      community.docker.docker_container_exec:
+        container: "{{ wp_container_name }}"
+        command: >-
+          /bin/bash -c "curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp"
+      when: wpcli_check.rc != 0
+
+    - name: Check if WordPress installed
+      community.docker.docker_container_exec:
+        container: "{{ wp_container_name }}"
+        command: wp core is-installed --allow-root
+      register: wp_check
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Install WordPress via WP-CLI
       community.docker.docker_compose_v2_exec:
+        project_src: "{{ wordpress_directory }}"
         service: "{{ wp_container_name }}"
-        command: /bin/bash "wp core install \
-          --url=http://{{ domain_name }} \
-          --title={{ wp_site_title }} \
-          --admin_user={{ wp_admin_user }} \
-          --admin_password={{ wp_admin_password }} \
-          --admin_email={{ wp_admin_email }} \
-          --allow-root"
-        chdir: /root
-      register: result
+        command: >-
+          wp core install
+          --url={{ wp_site_url }}
+          --title="{{ wp_site_title }}"
+          --admin_user={{ wp_admin_user }}
+          --admin_password={{ wp_admin_password }}
+          --admin_email={{ wp_admin_email }}
+          --allow-root
+      register: wp_install_result
+      when: wp_check.rc != 0
 
     - name: Show result
       ansible.builtin.debug:
@@ -51,3 +77,4 @@
           - "✅ WordPress déployé !"
           - "URL: http://localhost:{{ wordpress_port }}"
           - "PHPMyAdmin: http://localhost:{{ phpmyadmin_port }}"
+          - "WP_CLI: {{ wp_install_result.stdout | default('Already installed') }}"

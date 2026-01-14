@@ -1,0 +1,5 @@
+# Fichiers avec données sensibles
+inventory/group_vars/all.yml
+
+# Garder seulement les examples
+!inventory/group_vars/all.yml.example
