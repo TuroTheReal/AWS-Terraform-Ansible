@@ -1,0 +1,10 @@
+# Fichiers avec données sensibles
+ansible/inventory/group_vars/all.yml
+
+# Garder seulement les examples
+!ansible/inventory/group_vars/all.yml.example
+
+.terraform/
+*.tfstate
+*.tfstate.backup
+terraform.tfvars

@@ -1,6 +1,6 @@
 ---
 - name: Installation Docker Simple
-  hosts: vps
+  hosts: all
   become: yes
 
   tasks:
@@ -19,10 +19,28 @@
       apt:
         name:
           - docker.io
-          - docker-compose
         state: present
         update_cache: yes
       when: docker_check.rc != 0
+
+    - name: Download docker-compose v2
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+      when: docker_check.rc != 0
+
+    - name: Create docker plugins directory
+      file:
+        path: /usr/libexec/docker/cli-plugins
+        state: directory
+        mode: '0755'
+
+    - name: Symlink docker-compose as plugin
+      file:
+        src: /usr/local/bin/docker-compose
+        dest: /usr/libexec/docker/cli-plugins/docker-compose
+        state: link
 
     # Si Docker déjà installé, juste vérifier qu'il tourne
     - name: Ensure Docker is running
@@ -34,10 +52,10 @@
     # Ajouter user au groupe
     - name: Add user to docker group
       user:
-        name: "{{ ansible_user_id }}"
+        name: "{{ ansible_user }}"
         groups: docker
         append: yes
-      when: ansible_user_id != "root"
+      when: ansible_user != "root"
 
     # Afficher version
     - name: Display Docker info

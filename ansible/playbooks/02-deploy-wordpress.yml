@@ -1,7 +1,10 @@
 ---
 - name: WordPress x Mariadb deployment
-  hosts: vps
+  hosts: all
   become: yes
+
+  vars:
+    wp_site_url: "http://{{ ansible_host }}:8080"
 
   tasks:
     - name: Create a directory if it does not exist
