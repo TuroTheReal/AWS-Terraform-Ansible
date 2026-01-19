@@ -4,7 +4,7 @@ provider "aws" {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"]  # Canonical (fournisseur Ubuntu)
+  owners      = ["099720109477"]
 
   filter {
     name   = "name"
@@ -18,10 +18,9 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_security_group" "wordpress_sg" {
-  name        = "cloud-1-wordpress-sg" 
+  name        = "cloud-1-wordpress-sg"
   description = "Security group for WordPress server"
 
-  # SSH
   ingress {
     from_port   = 22
     to_port     = 22
@@ -29,7 +28,6 @@ resource "aws_security_group" "wordpress_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # HTTP
   ingress {
     from_port   = 80
     to_port     = 80
@@ -37,7 +35,6 @@ resource "aws_security_group" "wordpress_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # WordPress
   ingress {
     from_port   = 8080
     to_port     = 8080
@@ -45,7 +42,6 @@ resource "aws_security_group" "wordpress_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # PHPMyAdmin
   ingress {
     from_port   = 8081
     to_port     = 8081
@@ -53,7 +49,6 @@ resource "aws_security_group" "wordpress_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Autoriser tout en sortie
   egress {
     from_port   = 0
     to_port     = 0
@@ -68,6 +63,8 @@ resource "aws_security_group" "wordpress_sg" {
 }
 
 resource "aws_instance" "wordpress_server" {
+  count = 2
+
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   key_name      = var.key_name
@@ -80,37 +77,39 @@ resource "aws_instance" "wordpress_server" {
   }
 
   tags = {
-    Name    = "WordPress-Server"
+    Name    = "WordPress-Server-${count.index + 1}"
     Project = var.project_name
   }
 }
 
-# Générer inventory Ansible
 resource "local_file" "ansible_inventory" {
   content = templatefile("${path.module}/inventory.tpl", {
-    instance_ip = aws_instance.wordpress_server.public_ip
+    instance_ips = aws_instance.wordpress_server[*].public_ip
   })
   filename = "${path.module}/../ansible/inventory/aws.yml"
 }
 
-# Automatiser Ansible
-resource "null_resource" "provision_wordpress" {
+resource "null_resource" "wait_ssh" {
+  count = 2
+
   depends_on = [
     aws_instance.wordpress_server,
     local_file.ansible_inventory
   ]
 
-  # Attendre SSH
   provisioner "local-exec" {
     command = <<-EOT
-      echo "Attente SSH..."
-      until ssh -i ~/.ssh/aws -o ConnectTimeout=2 -o StrictHostKeyChecking=no ubuntu@${aws_instance.wordpress_server.public_ip} exit 2>/dev/null; do
+      echo "Attente SSH instance ${count.index + 1}..."
+      until ssh -i ~/.ssh/aws -o ConnectTimeout=2 -o StrictHostKeyChecking=no ubuntu@${aws_instance.wordpress_server[count.index].public_ip} exit 2>/dev/null; do
         sleep 5
       done
     EOT
   }
+}
 
-  # Lancer Ansible
+resource "null_resource" "run_ansible" {
+  depends_on = [null_resource.wait_ssh]
+
   provisioner "local-exec" {
     command = <<-EOT
       cd ${path.module}/../ansible
