@@ -4,7 +4,7 @@
   become: yes
 
   vars:
-    wp_site_url: "http://{{ ansible_host }}:8080"
+    wp_site_url: "http://{{ ansible_host }}"
 
   tasks:
     - name: Create a directory if it does not exist
@@ -13,10 +13,16 @@
         state: directory
         mode: '0755'
 
-    - name: Template a file
+    - name: Template docker compose
       ansible.builtin.template:
         src: docker-compose.yml.j2
         dest: "{{ wordpress_directory }}/docker-compose.yml"
+        mode: '0644'
+
+    - name: Template nginx config
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: "{{ wordpress_directory }}/nginx.conf"
         mode: '0644'
 
     - name: Create and start services
@@ -27,7 +33,7 @@
 
     - name: Pause play until a URL is reachable from this host
       ansible.builtin.uri:
-        url: "http://localhost:{{ wordpress_port }}"
+        url: "http://{{ ansible_host }}:{{ nginx_port }}"
         status_code: [200, 302]
         method: GET
       register: _result
@@ -78,6 +84,6 @@
       ansible.builtin.debug:
         msg:
           - "✅ WordPress déployé !"
-          - "URL: http://localhost:{{ wordpress_port }}"
-          - "PHPMyAdmin: http://localhost:{{ phpmyadmin_port }}"
+          - "URL: http://{{ ansible_host }}"
+          - "PHPMyAdmin: http://{{ ansible_host }}/phpmyadmin/"
           - "WP_CLI: {{ wp_install_result.stdout | default('Already installed') }}"

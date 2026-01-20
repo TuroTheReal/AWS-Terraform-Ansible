@@ -1,10 +1,17 @@
-# Fichiers avec données sensibles
+# Ansible
 ansible/inventory/group_vars/all.yml
-
-# Garder seulement les examples
 !ansible/inventory/group_vars/all.yml.example
 
+# Terraform
 .terraform/
+.terraform.lock.hcl
 *.tfstate
-*.tfstate.backup
-terraform.tfvars
+*.tfstate.*
+
+# IDE
+.vscode/
+
+# TMP
+*.log
+*.retry
+.ansible/
