@@ -20,8 +20,7 @@ pma_host: mariadb
 pma_port: 3306
 
 # Ports
-wordpress_port: 8080
-phpmyadmin_port: 8081
+nginx_port: 80
 
 # Divers
 wordpress_directory: /opt/wordpress
