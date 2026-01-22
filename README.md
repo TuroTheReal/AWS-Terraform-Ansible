@@ -7,13 +7,14 @@
 </p>
 
 <p align="center">
-  <i>Infrastructure as Code: Automated WordPress deployment on AWS using Terraform and Ansible</i>
+  <i>Infrastructure as Code: Automated WordPress deployment on AWS (Free-tier) using Terraform and Ansible</i>
 </p>
 
 ---
 
 ## Table of Contents
 - [About](#about)
+- [Architecture Constraints](#architecture-constraints)
 - [Infrastructure Diagram](#infrastructure-diagram)
 - [Content Structure](#content-structure)
 - [Prerequisites](#prerequisites)
@@ -44,6 +45,72 @@ This project automatically deploys a complete WordPress infrastructure on AWS by
 ```
 terraform apply → EC2 created → Inventory generated → SSH ready → Ansible triggered → Docker installed → WordPress UP
 ```
+
+## Architecture Constraints
+
+### Current Setup (AWS Free Tier)
+
+This project runs within **AWS Free Tier limits**:
+
+| Resource | Configuration | Free Tier Limit |
+|----------|---------------|-----------------|
+| EC2 | t2.micro | 750h/month |
+| Storage | 8GB EBS gp3 | 30GB/month |
+| Database | MariaDB container | N/A (self-hosted) |
+| TLS/HTTPS | Not available | Requires ALB |
+
+**Limitations:**
+- No load balancer (direct EC2 access)
+- No shared database (each instance has its own MariaDB)
+- HTTP only (HTTPS requires ALB + ACM)
+- Dynamic IPs (no Elastic IP to stay free)
+
+### Production Architecture
+
+For production without Free Tier constraints:
+
+```
+                         ┌─────────────────┐
+        HTTPS            │      ALB        │
+Users ──────────────────▶│ + ACM (TLS)     │
+                         └────────┬────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    ▼                           ▼
+              ┌───────────┐               ┌───────────┐
+              │ ECS/EC2   │               │ ECS/EC2   │
+              │ WordPress │               │ WordPress │
+              └─────┬─────┘               └─────┬─────┘
+                    │                           │
+                    └─────────────┬─────────────┘
+                                  ▼
+                         ┌───────────────┐
+                         │  RDS MySQL    │
+                         │  (shared DB)  │
+                         └───────────────┘
+```
+
+| Component | Free Tier | Production |
+|-----------|-----------|------------|
+| Compute | EC2 t2.micro | EC2 Auto Scaling Group or ECS Fargate |
+| Load Balancer | None | ALB (TLS termination) |
+| Database | MariaDB container | RDS MySQL (managed, backups, Multi-AZ) |
+| TLS/HTTPS | None | ACM (free certificate) + ALB |
+| Media Storage | Docker volume | S3 bucket |
+| DNS | IP address | Route53 (optional) |
+
+### Why This Matters
+
+**Current project (2 independent EC2):**
+- Each instance has its own database
+- Data is NOT synchronized
+- Users hitting different IPs see different content
+
+**Production setup (ALB + shared RDS):**
+- Single entry point (ALB DNS)
+- All instances share the same database
+- Consistent data across all requests
+- Auto-scaling based on load
 
 ## Infrastructure Diagram
 
