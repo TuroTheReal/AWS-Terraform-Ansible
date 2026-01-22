@@ -12,18 +12,18 @@
 
 ---
 
-## Table of Contents
-- [About](#about)
-- [Architecture Constraints](#architecture-constraints)
-- [Infrastructure Diagram](#infrastructure-diagram)
-- [Content Structure](#content-structure)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Usage Guide](#usage-guide)
-- [Troubleshooting](#troubleshooting)
+## 📑 Table of Contents
+- [📌 About](#-about)
+- [⚠️ Architecture Constraints](#️-architecture-constraints)
+- [🏗️ Infrastructure Diagram](#️-infrastructure-diagram)
+- [📁 Content Structure](#-content-structure)
+- [✅ Prerequisites](#-prerequisites)
+- [🚀 Quick Start](#-quick-start)
+- [⚙️ Configuration](#️-configuration)
+- [📖 Usage Guide](#-usage-guide)
+- [🔧 Troubleshooting](#-troubleshooting)
 
-## About
+## 📌 About
 
 This project automatically deploys a complete WordPress infrastructure on AWS by combining:
 - **Terraform** for cloud infrastructure provisioning
@@ -46,7 +46,7 @@ This project automatically deploys a complete WordPress infrastructure on AWS by
 terraform apply → EC2 created → Inventory generated → SSH ready → Ansible triggered → Docker installed → WordPress UP
 ```
 
-## Architecture Constraints
+## ⚠️ Architecture Constraints
 
 ### Current Setup (AWS Free Tier)
 
@@ -112,7 +112,7 @@ Users ──────────────────▶│ + ACM (TLS)  
 - Consistent data across all requests
 - Auto-scaling based on load
 
-## Infrastructure Diagram
+## 🏗️ Infrastructure Diagram
 
 ```mermaid
 graph TB
@@ -152,7 +152,7 @@ graph TB
     USER -->|HTTP :80| NG2
 ```
 
-## Content Structure
+## 📁 Content Structure
 
 ```
 AWS-Terraform-Ansible/
@@ -173,7 +173,7 @@ AWS-Terraform-Ansible/
 └── README.md
 ```
 
-## Prerequisites
+## ✅ Prerequisites
 
 ### Required Tools
 
@@ -200,7 +200,7 @@ ls ~/.ssh/aws  # Private key
 ansible-galaxy collection install community.docker
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Full Deployment (one-liner)
 
@@ -236,7 +236,7 @@ terraform output
 | PHPMyAdmin | `http://<IP>/phpmyadmin/` |
 | WP Admin | `http://<IP>/wp-admin/` |
 
-## Configuration
+## ⚙️ Configuration
 
 ### Terraform Variables
 
@@ -265,7 +265,7 @@ File: `ansible/inventory/group_vars/all.yml`
 | `wp_site_title` | Site title |
 | `mysql_root_password` | MariaDB root |
 
-## Usage Guide
+## 📖 Usage Guide
 
 ### Run Ansible Only
 
@@ -294,7 +294,7 @@ ssh -i ~/.ssh/aws ubuntu@<PUBLIC_IP>
 ssh -i ~/.ssh/aws ubuntu@<IP> "docker ps"
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### SSH Timeout During Terraform
 
