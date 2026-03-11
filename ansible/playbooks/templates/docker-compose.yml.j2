@@ -43,6 +43,8 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
 
+  # ⚠️ DEV ONLY: PHPMyAdmin is publicly exposed via Nginx reverse proxy.
+  # In production, remove this service or restrict access (IP whitelist, VPN, SSH tunnel).
   phpmyadmin:
     container_name: phpmyadmin
     image: phpmyadmin:latest

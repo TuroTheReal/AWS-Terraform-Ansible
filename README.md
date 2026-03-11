@@ -64,6 +64,7 @@ This project runs within **AWS Free Tier limits**:
 - No shared database (each instance has its own MariaDB)
 - HTTP only (HTTPS requires ALB + ACM)
 - Dynamic IPs (no Elastic IP to stay free)
+- PHPMyAdmin exposed publicly (development only — should be restricted or removed in production)
 
 ### Production Architecture
 

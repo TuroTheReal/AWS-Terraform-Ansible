@@ -10,6 +10,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # ⚠️ DEV ONLY: PHPMyAdmin exposed publicly. In production, restrict access or remove.
     location /phpmyadmin/ {
         proxy_pass http://phpmyadmin:80/;
         proxy_set_header Host $host;

@@ -56,6 +56,10 @@
           /bin/bash -c "curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
           && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp"
       when: wpcli_check.rc != 0
+      retries: 5
+      delay: 10
+      register: wpcli_install
+      until: wpcli_install.rc == 0
 
     - name: Check if WordPress installed
       community.docker.docker_container_exec:
