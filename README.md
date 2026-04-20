@@ -326,3 +326,12 @@ docker logs nginx
 
 **Last Updated**: 2025-01-21
 **Version**: 1.0
+
+## 📝 Related Articles
+
+Blog posts documenting the learning process and context behind this project:
+
+- 📝 [AWS + Terraform + Ansible: Infrastructure as Code](https://arthur-portfolio.com/en/blog/aws-terraform-ansible) — Deep dive into this project: design choices, Free-tier constraints and automation workflow
+- 📝 [AWS + Terraform + Ansible : Infrastructure as Code](https://arthur-portfolio.com/fr/blog/aws-terraform-ansible) — Deep dive into this project: design choices, Free-tier constraints and automation workflow
+
+---
