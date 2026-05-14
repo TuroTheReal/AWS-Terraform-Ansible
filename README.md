@@ -335,7 +335,7 @@ docker logs nginx
 
 Blog posts documenting the learning process and context behind this project:
 
-- 📝 [AWS + Terraform + Ansible: Infrastructure as Code](https://arthur-portfolio.com/en/blog/aws-terraform-ansible) — Deep dive into this project: design choices, Free-tier constraints and automation workflow
+- 📝 [AWS + Terraform + Ansible: Infrastructure as Code](https://arthurbernard.dev/en/blog/aws-terraform-ansible) — Deep dive into this project: design choices, Free-tier constraints and automation workflow
 
 ---
 
