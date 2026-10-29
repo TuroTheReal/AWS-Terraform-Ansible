@@ -1,0 +1,19 @@
+---
+# Valeurs par défaut non secrètes (priorité la plus basse, écrasables via group_vars)
+
+# Base de données
+wordpress_db_name: wordpress
+wordpress_db_user: wpuser
+wordpress_db_host: mariadb:3306
+
+# PHPMyAdmin
+pma_host: mariadb
+pma_port: 3306
+
+# Nginx
+nginx_port: 80
+
+# Déploiement
+wordpress_directory: /opt/wordpress
+wp_container_name: wordpress
+wp_site_url: "http://{{ ansible_host }}"

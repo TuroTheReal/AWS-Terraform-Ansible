@@ -1,0 +1,86 @@
+---
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: "{{ wordpress_directory }}"
+    state: directory
+    mode: '0755'
+
+- name: Template docker compose
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ wordpress_directory }}/docker-compose.yml"
+    mode: '0644'
+
+- name: Template nginx config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ wordpress_directory }}/nginx.conf"
+    mode: '0644'
+  notify: Restart nginx
+
+- name: Create and start services
+  community.docker.docker_compose_v2:
+    project_src: "{{ wordpress_directory }}"
+    state: present
+  register: output
+
+- name: Pause play until a URL is reachable from this host
+  ansible.builtin.uri:
+    url: "http://{{ ansible_host }}:{{ nginx_port }}"
+    status_code: [200, 302]
+    method: GET
+  register: _result
+  until: _result.status in [200, 302]
+  retries: 30
+  delay: 5
+
+- name: Check if WP-CLI exists
+  community.docker.docker_container_exec:
+    container: "{{ wp_container_name }}"
+    command: wp --info --allow-root
+  register: wpcli_check
+  failed_when: false
+  changed_when: false
+
+- name: Install WP-CLI in WordPress container
+  community.docker.docker_container_exec:
+    container: "{{ wp_container_name }}"
+    command: >-
+      /bin/bash -c "curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+      && chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp"
+  when: wpcli_check.rc != 0
+  retries: 5
+  delay: 10
+  register: wpcli_install
+  until: wpcli_install.rc == 0
+
+- name: Check if WordPress installed
+  community.docker.docker_container_exec:
+    container: "{{ wp_container_name }}"
+    command: wp core is-installed --allow-root
+  register: wp_check
+  failed_when: false
+  changed_when: false
+
+- name: Install WordPress via WP-CLI
+  community.docker.docker_container_exec:
+    container: "{{ wp_container_name }}"
+    command: >-
+      wp core install
+      --url={{ wp_site_url }}
+      --title="{{ wp_site_title }}"
+      --admin_user={{ wp_admin_user }}
+      --admin_password={{ wp_admin_password }}
+      --admin_email={{ wp_admin_email }}
+      --allow-root
+  register: wp_install_result
+  when: wp_check.rc != 0
+  no_log: true
+
+- name: Show result
+  ansible.builtin.debug:
+    msg:
+      - "✅ WordPress déployé !"
+      - "URL: http://{{ ansible_host }}"
+      - "PHPMyAdmin: http://{{ ansible_host }}/phpmyadmin/"
+      - "WP_CLI: {{ 'Installed now' if wp_install_result is changed else 'Already installed' }}"

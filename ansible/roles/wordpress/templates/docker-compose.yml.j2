@@ -16,7 +16,7 @@ services:
         - phpmyadmin
         
   wordpress:
-    container_name: wordpress
+    container_name: {{ wp_container_name }}
     image: wordpress:latest
     environment:
       WORDPRESS_DB_HOST: {{ wordpress_db_host }}

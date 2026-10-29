@@ -70,7 +70,7 @@ resource "aws_instance" "wordpress_server" {
 }
 
 resource "local_file" "ansible_inventory" {
-  content = templatefile("${path.module}/inventory.tpl", {
+  content = templatefile("${path.module}/inventory.tftpl", {
     instance_ips = aws_instance.wordpress_server[*].public_ip
   })
   filename = "${path.module}/../ansible/inventory/aws.yml"
@@ -100,8 +100,7 @@ resource "null_resource" "run_ansible" {
   provisioner "local-exec" {
     command = <<-EOT
       cd ${path.module}/../ansible
-      ansible-playbook -i inventory/aws.yml playbooks/01-docker-installation.yml
-      ansible-playbook -i inventory/aws.yml playbooks/02-deploy-wordpress.yml
+      ansible-playbook -i inventory/aws.yml site.yml
     EOT
   }
 }

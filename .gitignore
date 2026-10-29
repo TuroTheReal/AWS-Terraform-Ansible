@@ -1,5 +1,6 @@
 # Ansible
 ansible/inventory/group_vars/all.yml
+ansible/inventory/aws.yml
 !ansible/inventory/group_vars/all.yml.example
 
 # Terraform

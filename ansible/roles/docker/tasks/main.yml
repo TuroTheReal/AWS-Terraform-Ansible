@@ -1,0 +1,63 @@
+---
+- name: Test connexion
+  ansible.builtin.ping:
+
+# Check si Docker existe (ne pas fail si absent)
+- name: Check if Docker is installed
+  ansible.builtin.command: docker --version
+  register: docker_check
+  failed_when: false
+  changed_when: false
+
+# Installer SEULEMENT si pas présent
+- name: Install Docker
+  ansible.builtin.apt:
+    name:
+      - docker.io
+    state: present
+    update_cache: true
+  when: docker_check.rc != 0
+
+- name: Download docker-compose v2
+  ansible.builtin.get_url:
+    url: https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+  when: docker_check.rc != 0
+
+- name: Create docker plugins directory
+  ansible.builtin.file:
+    path: /usr/libexec/docker/cli-plugins
+    state: directory
+    mode: '0755'
+
+- name: Symlink docker-compose as plugin
+  ansible.builtin.file:
+    src: /usr/local/bin/docker-compose
+    dest: /usr/libexec/docker/cli-plugins/docker-compose
+    state: link
+
+# Si Docker déjà installé, juste vérifier qu'il tourne
+- name: Ensure Docker is running
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+
+# Ajouter user au groupe
+- name: Add user to docker group
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
+  when: ansible_user != "root"
+
+# Afficher version
+- name: Display Docker info
+  ansible.builtin.command: docker --version
+  register: docker_version
+  changed_when: false
+
+- name: Show result
+  ansible.builtin.debug:
+    msg: "✅ Docker prêt : {{ docker_version.stdout }}"

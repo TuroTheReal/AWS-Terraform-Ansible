@@ -1,0 +1,8 @@
+---
+# nginx.conf est monté en volume : compose ne voit pas le changement, il faut redémarrer nginx
+- name: Restart nginx
+  community.docker.docker_compose_v2:
+    project_src: "{{ wordpress_directory }}"
+    services:
+      - nginx
+    state: restarted

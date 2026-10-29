@@ -1,0 +1,8 @@
+---
+- name: Deploy WordPress stack
+  hosts: all
+  become: true
+
+  roles:
+    - docker
+    - wordpress
